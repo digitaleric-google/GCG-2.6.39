@@ -1879,6 +1879,12 @@ void ext4_mb_complex_scan_group(struct ext4_allocation_context *ac,
 
 	i = e4b->bd_info->bb_first_free;
 
+	/*
+	 * Silence the compiler's uninitialized value detector, which otherwise
+	 * would complain that ex.fe_logical is not initialized.
+	 */
+	ex.fe_logical = ac->ac_o_ex.fe_logical;
+
 	while (free && ac->ac_status == AC_STATUS_CONTINUE) {
 		i = mb_find_next_zero_bit(bitmap,
 						EXT4_BLOCKS_PER_GROUP(sb), i);

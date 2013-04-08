@@ -23,11 +23,9 @@
 
 const kernel_cap_t __cap_empty_set = CAP_EMPTY_SET;
 const kernel_cap_t __cap_full_set = CAP_FULL_SET;
-const kernel_cap_t __cap_init_eff_set = CAP_INIT_EFF_SET;
 
 EXPORT_SYMBOL(__cap_empty_set);
 EXPORT_SYMBOL(__cap_full_set);
-EXPORT_SYMBOL(__cap_init_eff_set);
 
 int file_caps_enabled = 1;
 
@@ -163,7 +161,7 @@ SYSCALL_DEFINE2(capget, cap_user_header_t, header, cap_user_data_t, dataptr)
 {
 	int ret = 0;
 	pid_t pid;
-	unsigned tocopy;
+	unsigned tocopy = 0;
 	kernel_cap_t pE, pI, pP;
 
 	ret = cap_validate_magic(header, &tocopy);

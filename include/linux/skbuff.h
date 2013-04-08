@@ -1567,6 +1567,16 @@ static inline struct sk_buff *netdev_alloc_skb_ip_align(struct net_device *dev,
 	return skb;
 }
 
+static inline struct sk_buff *netdev_alloc_skb_ip_align_gfp(
+		struct net_device *dev, unsigned int length, gfp_t gfp)
+{
+	struct sk_buff *skb;
+	skb = __netdev_alloc_skb(dev, length + NET_IP_ALIGN, gfp);
+	if (NET_IP_ALIGN && skb)
+		skb_reserve(skb, NET_IP_ALIGN);
+	return skb;
+}
+
 /**
  *	__netdev_alloc_page - allocate a page for ps-rx on a specific device
  *	@dev: network device to receive on

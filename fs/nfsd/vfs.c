@@ -180,7 +180,7 @@ nfsd_lookup_dentry(struct svc_rqst *rqstp, struct svc_fh *fhp,
 {
 	struct svc_export	*exp;
 	struct dentry		*dparent;
-	struct dentry		*dentry;
+	struct dentry		*uninitialized_var(dentry);
 	__be32			err;
 	int			host_err;
 

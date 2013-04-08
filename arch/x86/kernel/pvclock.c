@@ -135,18 +135,45 @@ void pvclock_read_wallclock(struct pvclock_wall_clock *wall_clock,
 			    struct pvclock_vcpu_time_info *vcpu_time,
 			    struct timespec *ts)
 {
+	static u32 version_stall_bit = 1;
 	u32 version;
+	u32 first_version;
 	u64 delta;
 	struct timespec now;
+	int looped;
 
 	/* get wallclock at system boot */
-	do {
+again:
+	looped = 0;
+	first_version = wall_clock->version;
+	while (1) {
+		looped++;
+		if (looped >= 1000000) {
+			/*
+			 * Deal with buggy old kernels that can end up
+			 * with erroneous versions (where they are
+			 * stable when odd instead of stable when even)
+			 */
+			if (version != first_version) {
+				pr_info("Taking a long time to read out "
+					"the pvclock\n");
+				goto again;
+			}
+			pr_warn("Host pvclock looks broken. Compensating");
+			version_stall_bit ^= 1;
+			goto again;
+		}
 		version = wall_clock->version;
 		rmb();		/* fetch version before time */
 		now.tv_sec  = wall_clock->sec;
 		now.tv_nsec = wall_clock->nsec;
 		rmb();		/* fetch time before checking version */
-	} while ((wall_clock->version & 1) || (version != wall_clock->version));
+		if ((wall_clock->version & 1) == version_stall_bit)
+			continue;
+		if (version != wall_clock->version)
+			continue;
+		break;
+	}
 
 	delta = pvclock_clocksource_read(vcpu_time);	/* time since system boot */
 	delta += now.tv_sec * (u64)NSEC_PER_SEC + now.tv_nsec;

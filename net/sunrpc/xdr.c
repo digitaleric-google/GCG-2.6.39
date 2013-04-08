@@ -889,7 +889,7 @@ static void __write_bytes_to_xdr_buf(struct xdr_buf *subbuf, void *obj, unsigned
 /* obj is assumed to point to allocated memory of size at least len: */
 int write_bytes_to_xdr_buf(struct xdr_buf *buf, unsigned int base, void *obj, unsigned int len)
 {
-	struct xdr_buf subbuf;
+	struct xdr_buf uninitialized_var(subbuf);
 	int status;
 
 	status = xdr_buf_subsegment(buf, &subbuf, base, len);

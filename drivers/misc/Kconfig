@@ -475,6 +475,18 @@ config PCH_PHUB
 	  To compile this driver as a module, choose M here: the module will
 	  be called pch_phub.
 
+config GOOGLE_METRICS
+	tristate "Google performance metrics recorder card driver"
+	depends on PCI
+	default n
+	help
+	  The performance metrics recorder card driver allows kernel and
+          userspace components to export performance metrics for external
+          recording.
+
+	  To compile this driver as a module, choose M here: the
+	  module will be called hpilo.
+
 source "drivers/misc/c2port/Kconfig"
 source "drivers/misc/eeprom/Kconfig"
 source "drivers/misc/cb710/Kconfig"

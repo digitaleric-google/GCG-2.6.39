@@ -18,6 +18,15 @@ struct virtio_balloon_config
 	__le32 num_pages;
 	/* Number of pages we've actually got in balloon. */
 	__le32 actual;
+#if defined(CONFIG_VIRTIO_FILEBALLOON) ||\
+	defined(CONFIG_VIRTIO_FILEBALLOON_MODULE)
+	/* Total pages on this system. */
+	__le32 pages_total;
+	/* Free pages on this system. */
+	__le32 pages_free;
+	/* If the device needs pages_total/pages_free updated. */
+	__le32 need_stats;
+#endif
 };
 
 #define VIRTIO_BALLOON_S_SWAP_IN  0   /* Amount of memory swapped in */

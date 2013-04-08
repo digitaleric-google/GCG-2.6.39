@@ -14,4 +14,7 @@
 #define VIRTIO_ID_BALLOON	5 /* virtio balloon */
 #define VIRTIO_ID_9P		9 /* 9p virtio console */
 
+/* TODO(fes): Get a global device id if this goes upstream */
+#define VIRTIO_ID_FILE_BALLOON	0x8005 /* virtio file-backed balloon */
+
 #endif /* _LINUX_VIRTIO_IDS_H */

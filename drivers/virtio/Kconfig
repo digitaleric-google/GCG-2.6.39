@@ -33,3 +33,13 @@ config VIRTIO_BALLOON
 
 	 If unsure, say M.
 
+config VIRTIO_FILEBALLOON
+	tristate "Virtio page cache-backed balloon driver"
+	select VIRTIO
+	select VIRTIO_RING
+	---help---
+	 This driver supports decreasing and automatically reclaiming the
+	 memory within a guest VM
+
+	 If unsure, say M.
+

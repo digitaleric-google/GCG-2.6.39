@@ -347,3 +347,10 @@ config NEED_PER_CPU_KM
 	depends on !SMP
 	bool
 	default y
+
+config MEMORY_METRICS
+	tristate "Export memory metrics via gmetrics"
+	depends on GOOGLE_METRICS
+	help
+	  This driver exposes memory subsystem metrics via the gmetrics
+	  hardware, if available.
