@@ -100,6 +100,10 @@ static struct balloon_inode {
  */
 static struct inode *balloon_alloc_inode(struct super_block *sb)
 {
+	static bool already_inited;
+	/* We should only ever be called once! */
+	BUG_ON(already_inited);
+	already_inited = true;
 	inode_init_once(&the_inode.inode);
 	return &the_inode.inode;
 }
@@ -121,22 +125,6 @@ static const struct super_operations balloonfs_ops = {
 };
 
 static const struct dentry_operations balloonfs_dentry_operations = {
-};
-
-static struct dentry *balloonfs_mount(struct file_system_type *fs_type,
-			 int flags, const char *dev_name, void *data)
-{
-	return mount_pseudo(fs_type, "balloon:", &balloonfs_ops,
-		&balloonfs_dentry_operations, BALLOONFS_MAGIC);
-}
-
-/* The single mounted skeleton filesystem */
-static struct vfsmount *balloon_mnt __read_mostly;
-
-static struct file_system_type balloon_fs_type = {
-	.name =		"balloonfs",
-	.mount =	balloonfs_mount,
-	.kill_sb =	kill_anon_super,
 };
 
 /*
@@ -175,6 +163,30 @@ static struct backing_dev_info balloonfs_backing_dev_info = {
 	.name           = "balloonfs",
 	.ra_pages       = 0,
 	.capabilities   = BDI_CAP_NO_ACCT_AND_WRITEBACK
+};
+
+static struct dentry *balloonfs_mount(struct file_system_type *fs_type,
+			 int flags, const char *dev_name, void *data)
+{
+	struct dentry *root;
+	struct inode *inode;
+	root = mount_pseudo(fs_type, "balloon:", &balloonfs_ops,
+			    &balloonfs_dentry_operations, BALLOONFS_MAGIC);
+	inode = root->d_inode;
+	inode->i_mapping->a_ops = &balloonfs_aops;
+	mapping_set_gfp_mask(inode->i_mapping,
+			     (GFP_HIGHUSER | __GFP_NOMEMALLOC));
+	inode->i_mapping->backing_dev_info = &balloonfs_backing_dev_info;
+	return root;
+}
+
+/* The single mounted skeleton filesystem */
+static struct vfsmount *balloon_mnt __read_mostly;
+
+static struct file_system_type balloon_fs_type = {
+	.name =		"balloonfs",
+	.mount =	balloonfs_mount,
+	.kill_sb =	kill_anon_super,
 };
 
 /* Acknowledges a message from the specified virtqueue. */
@@ -592,13 +604,6 @@ static int __init init(void)
 		err = PTR_ERR(balloon_mnt);
 		goto out_filesystem;
 	}
-
-	new_inode(balloon_mnt->mnt_sb);
-	the_inode.inode.i_mapping->a_ops = &balloonfs_aops;
-	the_inode.inode.i_mapping->flags |=
-		(GFP_HIGHUSER | __GFP_NOMEMALLOC);
-	the_inode.inode.i_mapping->backing_dev_info =
-		&balloonfs_backing_dev_info;
 
 	err = register_virtio_driver(&virtio_balloon_driver);
 	if (err)
